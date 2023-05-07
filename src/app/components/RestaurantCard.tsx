@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function RestaurantCard() {
   return (
     <div className="w-64 h-72 m-3 rounded overflow-hidden border cursor-pointer">
