@@ -3,15 +3,97 @@ import NavBar from "../components/NavBar";
 import Header from "../components/Header";
 import SearchSideBar from "./components/SearchSideBar";
 import RestaurantCard from "./components/RestaurantCard";
-export default function Search() {
+import { PRICE, PrismaClient } from "@prisma/client";
+import { transformDocument } from "@prisma/client/runtime";
+
+const prisma = new PrismaClient();
+
+interface SearchParams {
+  city?: string;
+  cuisine?: string;
+  price?: PRICE;
+}
+const fetchRestaurantsBySearch = (SearchParams: SearchParams) => {
+  const select = {
+    id: true,
+    name: true,
+    main_image: true,
+    slug: true,
+    price: true,
+    location: true,
+    cuisine: true,
+  };
+
+  const where: any = {};
+
+  if (SearchParams.city) {
+    const location = {
+      name: {
+        equals: SearchParams.city.toLowerCase(),
+      },
+    };
+    where.location = location;
+  }
+
+  if (SearchParams.cuisine) {
+    const cuisine = {
+      name: {
+        equals: SearchParams.cuisine.toLowerCase(),
+      },
+    };
+    where.cuisine = cuisine;
+  }
+
+  if (SearchParams.price) {
+    const price = {
+      equals: SearchParams.price,
+    };
+    where.price = price;
+  }
+
+  return prisma.restaurant.findMany({
+    where,
+    select,
+  });
+};
+
+const fetchLocations = async () => {
+  return prisma.location.findMany();
+};
+
+const fetchCusinses = async () => {
+  return prisma.cuisine.findMany();
+};
+
+export default async function Search({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const restaurants = await fetchRestaurantsBySearch(searchParams);
+  const cuisines = await fetchCusinses();
+  const locations = await fetchLocations();
+
   return (
     <>
       <Header />
 
       <div className="flex py-4 m-auto w-2/3 justify-between items-start">
-        <SearchSideBar />
+        <SearchSideBar
+          locations={locations}
+          cuisines={cuisines}
+          searchParams={searchParams}
+        />
         <div className="w-5/6">
-          <RestaurantCard />
+          {restaurants.length ? (
+            <>
+              {restaurants.map((restaurant) => (
+                <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+              ))}
+            </>
+          ) : (
+            <p>no restaurant in area</p>
+          )}
         </div>
       </div>
     </>
