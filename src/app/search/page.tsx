@@ -22,6 +22,7 @@ const fetchRestaurantsBySearch = (SearchParams: SearchParams) => {
     price: true,
     location: true,
     cuisine: true,
+    reviews: true,
   };
 
   const where: any = {};
