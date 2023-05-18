@@ -1,7 +1,6 @@
 import { Items } from "@prisma/client";
 
 export default function MenuCard({ item }: { item: Items }) {
-  console.log(item);
   return (
     <div className=" border rounded p-3 w-[49%] mb-3">
       <h3 className="font-bold text-lg">{item.name}</h3>
