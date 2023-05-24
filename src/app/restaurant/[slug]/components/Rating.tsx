@@ -1,5 +1,5 @@
 import Stars from "@/app/components/Stars";
-import { calculateReviewRatingAverage } from "../../../../../utils/calculateReviewRatingAverage";
+import { calculateReviewRatingAverage } from "../../../../utils/calculateReviewRatingAverage";
 
 export default function Rating({ reviews }: { reviews: Review[] }) {
   return (
