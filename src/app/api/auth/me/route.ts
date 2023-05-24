@@ -32,5 +32,20 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  return NextResponse.json({ user });
+  if (!user) {
+    return NextResponse.json(
+      { errorMessage: "User Not Found!" },
+      { status: 401 }
+    );
+  }
+  const userResponse = {
+    id: user.id,
+    firstName: user.first_name,
+    lastName: user.last_name,
+    email: user.email,
+    phoneNumber: user.phone_number,
+    city: user.city,
+  };
+
+  return NextResponse.json(userResponse);
 }
