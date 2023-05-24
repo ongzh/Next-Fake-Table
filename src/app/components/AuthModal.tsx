@@ -25,14 +25,14 @@ export default function AuthModal({ isSignedIn }: { isSignedIn: boolean }) {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const { signin } = useAuth();
+  const { signin, signup } = useAuth();
   const { error, loading, data } = useContext(AuthenticationContext);
 
   const [inputs, setInputs] = useState({
     firstName: "",
     lastName: "",
     email: "",
-    phone_number: "",
+    phoneNumber: "",
     city: "",
     password: "",
   });
@@ -51,7 +51,7 @@ export default function AuthModal({ isSignedIn }: { isSignedIn: boolean }) {
         inputs.email &&
         inputs.password &&
         inputs.city &&
-        inputs.phone_number
+        inputs.phoneNumber
       ) {
         return setDisabled(false);
       }
@@ -61,7 +61,12 @@ export default function AuthModal({ isSignedIn }: { isSignedIn: boolean }) {
 
   const handleClick = () => {
     if (isSignedIn) {
-      return signin({ email: inputs.email, password: inputs.password });
+      return signin(
+        { email: inputs.email, password: inputs.password },
+        handleClose
+      );
+    } else {
+      signup(inputs, handleClose);
     }
   };
 

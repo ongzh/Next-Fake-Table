@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import * as jose from "jose";
 const prisma = new PrismaClient();
 export async function POST(req: NextRequest) {
-  const { firstName, lastName, email, phone_number, city, password } =
+  const { firstName, lastName, email, phoneNumber, city, password } =
     await req.json();
   const errors: string[] = [];
   const validationSchema = [
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     },
     { valid: validator.isEmail(email), errorMessage: "Email is Invalid" },
     {
-      valid: validator.isMobilePhone(phone_number),
+      valid: validator.isMobilePhone(phoneNumber),
       errorMessage: "Phone number is Invalid",
     },
     {
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
       last_name: lastName,
       password: hashedPassword,
       email,
-      phone_number,
+      phone_number: phoneNumber,
       city,
     },
   });
@@ -78,5 +78,18 @@ export async function POST(req: NextRequest) {
     .setProtectedHeader({ alg: algo })
     .setExpirationTime("24h")
     .sign(secret);
-  return NextResponse.json({ token });
+
+  const userResponse = {
+    firstName: user.first_name,
+    lastName: user.last_name,
+    email: user.email,
+    phone_number: user.phone_number,
+    city: user.city,
+  };
+  return NextResponse.json(userResponse, {
+    status: 200,
+    headers: {
+      "Set-Cookie": `jwt=${token}; Max-age=24*60*60; Path=/`,
+    },
+  });
 }

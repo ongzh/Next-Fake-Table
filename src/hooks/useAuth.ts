@@ -7,13 +7,16 @@ export const useAuth = () => {
     AuthenticationContext
   );
 
-  const signin = async ({
-    email,
-    password,
-  }: {
-    email: string;
-    password: string;
-  }) => {
+  const signin = async (
+    {
+      email,
+      password,
+    }: {
+      email: string;
+      password: string;
+    },
+    handleClose = () => {}
+  ) => {
     setAuthState({ loading: true, error: null, data: null });
     try {
       const response = await axios.post(
@@ -24,6 +27,7 @@ export const useAuth = () => {
         }
       );
       setAuthState({ loading: false, error: null, data: response.data });
+      handleClose();
     } catch (error: any) {
       console.log(error.response.data.errorMessage);
       setAuthState({
@@ -33,6 +37,47 @@ export const useAuth = () => {
       });
     }
   };
-  const signup = async () => {};
+  const signup = async (
+    {
+      firstName,
+      lastName,
+      email,
+      password,
+      city,
+      phoneNumber,
+    }: {
+      email: string;
+      password: string;
+      firstName: string;
+      lastName: string;
+      city: string;
+      phoneNumber: string;
+    },
+    handleClose = () => {}
+  ) => {
+    setAuthState({ loading: true, error: null, data: null });
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/auth/signup",
+        {
+          email,
+          password,
+          firstName,
+          lastName,
+          city,
+          phoneNumber,
+        }
+      );
+      setAuthState({ loading: false, error: null, data: response.data });
+      handleClose();
+    } catch (error: any) {
+      console.log(error.response.data.errorMessage);
+      setAuthState({
+        loading: false,
+        error: error.response.data.errorMessage,
+        data: null,
+      });
+    }
+  };
   return { signin, signup };
 };

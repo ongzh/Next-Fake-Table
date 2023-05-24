@@ -5,7 +5,7 @@ interface Props {
     firstName: string;
     lastName: string;
     email: string;
-    phone_number: string;
+    phoneNumber: string;
     city: string;
     password: string;
   };
@@ -55,8 +55,8 @@ export default function AuthModalInputs({
             type="text"
             className="border rounded p-2 py-3 w-[49%]"
             placeholder="Phone"
-            value={inputs.phone_number}
-            name="phone_number"
+            value={inputs.phoneNumber}
+            name="phoneNumber"
             onChange={handleChangeInput}
           />
           <input
