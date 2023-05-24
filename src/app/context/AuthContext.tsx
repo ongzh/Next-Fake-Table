@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 //if server components are children, parent component can be client
-//allows all client components to have access to AuthStates
+//applied in layout.tsx to allow all client components to have access to AuthStates
 import React, { useState, createContext, useEffect } from "react";
 
 interface User {
@@ -38,7 +38,7 @@ export default function AuthContext({
   children: React.ReactNode;
 }) {
   const [authState, setAuthState] = useState<State>({
-    loading: false,
+    loading: true,
     data: null,
     error: null,
   });
@@ -50,13 +50,15 @@ export default function AuthContext({
       if (!jwt) {
         return setAuthState({ loading: false, error: null, data: null });
       }
+      //go to auth/me to verify the jwt token
       const response = await axios.get("http://localhost:3000/api/auth/me", {
         headers: {
           Authorization: `Bearer ${jwt}`,
         },
       });
+      //default all request to have token after verified
       axios.defaults.headers.common["Authorization"] = `Bearer ${jwt}`;
-
+      //set user info in data
       setAuthState({ loading: false, error: null, data: response.data });
     } catch (error: any) {
       setAuthState({
