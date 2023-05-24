@@ -8,6 +8,7 @@ import AuthModelInputs from "./AuthModalInputs";
 import { useAuth } from "../../hooks/useAuth";
 import { useContext } from "react";
 import { AuthenticationContext } from "../context/AuthContext";
+import { Alert, CircularProgress } from "@mui/material";
 const style = {
   position: "absolute" as "absolute",
   top: "50%",
@@ -90,9 +91,16 @@ export default function AuthModal({ isSignedIn }: { isSignedIn: boolean }) {
       >
         <Box sx={style}>
           {loading ? (
-            <div>loading...</div>
+            <div className="py-24 px-2 h-[600px] flex justify-center">
+              <CircularProgress />
+            </div>
           ) : (
             <div className="p-2 h-[600px]">
+              {error ? (
+                <Alert severity="error" className="mb-4">
+                  {error}
+                </Alert>
+              ) : null}
               <div className="uppercase font-bold text-center pb-2 border-b mb-2">
                 <p className="text-sm">
                   {renderContent("Sign In", "Create Account")}
