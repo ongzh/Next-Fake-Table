@@ -28,6 +28,8 @@ model Restaurant {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   reviews Review[]
+  bookings Booking[]
+  tables Table[]
 
 }
 
@@ -85,6 +87,39 @@ model Review{
   updated_at DateTime @updatedAt
 }
 
+model Booking{
+  id Int @id @default(autoincrement())
+  number_of_people Int
+  booking_time DateTime
+  booker_email String
+  booker_phone_number String
+  booker_first_name String
+  booker_last_name String
+  booker_occasion String
+  booker_request String
+  restaurant_id Int
+  restaurant Restaurant @relation(fields: [restaurant_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  booking_tables BookingsAtTable[]
+}
+
+model Table{
+  id Int @id @default(autoincrement())
+  seats Int
+  restaurant_id Int
+  restaurant Restaurant @relation(fields: [restaurant_id], references: [id])
+  bookings BookingsAtTable[]
+}
+
+model BookingsAtTable{
+  booking_id Int
+  booking Booking @relation(fields: [booking_id], references: [id])
+  table_id Int
+  table Table @relation(fields: [table_id], references: [id])
+  //many to many relationship, id is a composite key
+  @@id([booking_id, table_id])
+}
 
 enum PRICE {
   CHEAP
