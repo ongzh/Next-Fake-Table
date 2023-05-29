@@ -123,14 +123,7 @@ export async function GET(req: NextRequest, { params }: SlugParam) {
       return timeIsAfterOpeningHour && timeIsBeforeClosingHour;
     });
 
-  return NextResponse.json({
-    searchTimes,
-    bookings,
-    bookingTablesObj,
-    tables,
-    searchTimesWithTables,
-    availabilities,
-  });
+  return NextResponse.json(availabilities);
 }
 
 //test api url
