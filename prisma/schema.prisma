@@ -110,6 +110,8 @@ model Table{
   restaurant_id Int
   restaurant Restaurant @relation(fields: [restaurant_id], references: [id])
   bookings BookingsAtTable[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model BookingsAtTable{
@@ -119,6 +121,8 @@ model BookingsAtTable{
   table Table @relation(fields: [table_id], references: [id])
   //many to many relationship, id is a composite key
   @@id([booking_id, table_id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum PRICE {
