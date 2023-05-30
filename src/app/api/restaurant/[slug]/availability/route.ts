@@ -1,13 +1,8 @@
 import { NextResponse, NextRequest } from "next/server";
 import { times } from "../../../../../data";
 
-type SlugParam = {
-  params: {
-    slug: string;
-  };
-};
-
 import { PrismaClient } from "@prisma/client";
+import { SlugParam } from "../types";
 const prisma = new PrismaClient();
 
 export async function GET(req: NextRequest, { params }: SlugParam) {
