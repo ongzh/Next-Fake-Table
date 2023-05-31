@@ -39,9 +39,10 @@ export const findAvailableTables = async ({
     },
   });
   //list of bookings based on time: table_id: true
-  //key is any string, value is :{with key of number and value always true}
+  //date : {table_id: true}
+  //e.g. { '2023-07-27T16:00:00.000Z': { '7': true } }
   const bookingTablesObj: { [key: string]: { [key: number]: true } } = {};
-
+  console.log(bookings);
   bookings.forEach((booking) => {
     bookingTablesObj[booking.booking_time.toISOString()] =
       booking.booking_tables.reduce((obj, table) => {
@@ -73,6 +74,6 @@ export const findAvailableTables = async ({
       return true;
     });
   });
-
+  //return list of times in selected time range with tables that are available
   return searchTimesWithTables;
 };

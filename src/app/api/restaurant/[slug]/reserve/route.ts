@@ -57,12 +57,61 @@ export async function GET(req: NextRequest, { params }: SlugParam) {
       { status: 400 }
     );
   }
+  //tables available for specific time
+  const searchTimeWithTables = searchTimesWithTables.find((t) => {
+    return t.date.toISOString() === new Date(`${day}T${time}`).toISOString();
+  });
+
+  if (!searchTimeWithTables) {
+    return NextResponse.json(
+      { errorMessage: "Unable to book due to no availability" },
+      { status: 400 }
+    );
+  }
+
+  const tablesCount: {
+    2: number[];
+    4: number[];
+  } = {
+    2: [],
+    4: [],
+  };
+  //only table with 2 or 4 seats are available in restaurant
+  searchTimeWithTables.tables.forEach((table) => {
+    if (table.seats === 2) {
+      tablesCount[2].push(table.id);
+    } else if (table.seats === 4) {
+      tablesCount[4].push(table.id);
+    }
+  });
+
+  const tablesToBook: number[] = [];
+  let seatsRemaining = Number(partySize);
+
+  while (seatsRemaining > 0) {
+    //book table of 4
+    if (seatsRemaining >= 3) {
+      if (tablesCount[4].length > 0) {
+        tablesToBook.push(tablesCount[4].pop()!);
+        seatsRemaining -= 4;
+      }
+    } else {
+      //book table of 2
+      if (tablesCount[2].length > 0) {
+        tablesToBook.push(tablesCount[2].pop()!);
+        seatsRemaining -= 2;
+        //if 2s full book then book 4man table even if 2ppl
+      } else {
+        tablesToBook.push(tablesCount[4].pop()!);
+        seatsRemaining -= 4;
+      }
+    }
+  }
 
   return NextResponse.json({
-    slug,
-    day,
-    time,
-    partySize,
+    tablesCount,
+    searchTimeWithTables,
+    searchTimesWithTables,
   });
 }
 
