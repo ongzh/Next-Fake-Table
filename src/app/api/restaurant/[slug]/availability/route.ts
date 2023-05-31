@@ -3,6 +3,7 @@ import { times } from "../../../../../data";
 
 import { PrismaClient } from "@prisma/client";
 import { SlugParam } from "../types";
+import { findAvailableTables } from "@/services/restaurant/findAvailableTables";
 const prisma = new PrismaClient();
 
 export async function GET(req: NextRequest, { params }: SlugParam) {
@@ -18,44 +19,6 @@ export async function GET(req: NextRequest, { params }: SlugParam) {
       { status: 400 }
     );
   }
-  //get range of times associate with selected time
-  const searchTimes = times.find((t) => {
-    return t.time === time;
-  })?.searchTimes;
-
-  if (!searchTimes) {
-    return NextResponse.json(
-      { errorMessage: "Please provide a valid time" },
-      { status: 400 }
-    );
-  }
-
-  const bookings = await prisma.booking.findMany({
-    where: {
-      booking_time: {
-        gte: new Date(`${day}T${searchTimes[0]}`),
-        lte: new Date(`${day}T${searchTimes[searchTimes.length - 1]}`),
-      },
-    },
-    select: {
-      booking_time: true,
-      number_of_people: true,
-      booking_tables: true,
-    },
-  });
-  //list of bookings based on time: table_id: true
-  //key is any string, value is :{with key of number and value always true}
-  const bookingTablesObj: { [key: string]: { [key: number]: true } } = {};
-
-  bookings.forEach((booking) => {
-    bookingTablesObj[booking.booking_time.toISOString()] =
-      booking.booking_tables.reduce((obj, table) => {
-        return {
-          ...obj,
-          [table.table_id]: true,
-        };
-      }, {});
-  });
 
   const restaurant = await prisma.restaurant.findUnique({
     where: {
@@ -75,27 +38,18 @@ export async function GET(req: NextRequest, { params }: SlugParam) {
     );
   }
 
-  const tables = restaurant.tables;
-  //map each time in searchtime to the tables array with tables that are available
-  const searchTimesWithTables = searchTimes.map((searchTime) => {
-    return {
-      date: new Date(`${day}T${searchTime}`),
-      time: searchTime,
-      tables,
-    };
+  const searchTimesWithTables = await findAvailableTables({
+    time,
+    day,
+    restaurant,
   });
-  //filter out tables that are not available
-  searchTimesWithTables.forEach((t) => {
-    t.tables = t.tables.filter((table) => {
-      //check with bookingTableObj, if booking exist on that table dont include
-      if (bookingTablesObj[t.date.toISOString()]) {
-        if (bookingTablesObj[t.date.toISOString()][table.id]) {
-          return false;
-        }
-      }
-      return true;
-    });
-  });
+
+  if (!searchTimesWithTables) {
+    return NextResponse.json(
+      { errorMessage: "Invalid data provided" },
+      { status: 400 }
+    );
+  }
   //avaialable seats based on partysize and time selected
   const availabilities = searchTimesWithTables
     .map((t) => {

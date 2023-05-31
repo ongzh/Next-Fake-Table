@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SlugParam } from "../types";
 import { PrismaClient } from "@prisma/client";
+import { findAvailableTables } from "@/services/restaurant/findAvailableTables";
 
 const prisma = new PrismaClient();
 export async function GET(req: NextRequest, { params }: SlugParam) {
@@ -9,9 +10,21 @@ export async function GET(req: NextRequest, { params }: SlugParam) {
   const time = req.nextUrl.searchParams.get("time");
   const partySize = req.nextUrl.searchParams.get("partySize");
 
+  if (!day || !time || !partySize) {
+    return NextResponse.json(
+      { errorMessage: "Please provide day, time and partySize" },
+      { status: 400 }
+    );
+  }
+
   const restaurant = await prisma.restaurant.findUnique({
     where: {
       slug,
+    },
+    select: {
+      tables: true,
+      open_time: true,
+      close_time: true,
     },
   });
 
@@ -28,6 +41,19 @@ export async function GET(req: NextRequest, { params }: SlugParam) {
   ) {
     return NextResponse.json(
       { errorMessage: "Please provide a valid time" },
+      { status: 400 }
+    );
+  }
+
+  const searchTimesWithTables = await findAvailableTables({
+    time,
+    day,
+    restaurant,
+  });
+
+  if (!searchTimesWithTables) {
+    return NextResponse.json(
+      { errorMessage: "Invalid data provided" },
       { status: 400 }
     );
   }
