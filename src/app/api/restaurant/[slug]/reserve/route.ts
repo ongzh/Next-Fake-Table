@@ -4,12 +4,19 @@ import { PrismaClient } from "@prisma/client";
 import { findAvailableTables } from "@/services/restaurant/findAvailableTables";
 
 const prisma = new PrismaClient();
-export async function GET(req: NextRequest, { params }: SlugParam) {
+export async function POST(req: NextRequest, { params }: SlugParam) {
   const slug = params.slug;
   const day = req.nextUrl.searchParams.get("day");
   const time = req.nextUrl.searchParams.get("time");
   const partySize = req.nextUrl.searchParams.get("partySize");
-
+  const {
+    bookerEmail,
+    bookerPhoneNumber,
+    bookerFirstName,
+    bookerLastName,
+    bookerOccasion,
+    bookerRequest,
+  } = await req.json();
   if (!day || !time || !partySize) {
     return NextResponse.json(
       { errorMessage: "Please provide day, time and partySize" },
@@ -25,6 +32,7 @@ export async function GET(req: NextRequest, { params }: SlugParam) {
       tables: true,
       open_time: true,
       close_time: true,
+      id: true,
     },
   });
 
@@ -108,10 +116,32 @@ export async function GET(req: NextRequest, { params }: SlugParam) {
     }
   }
 
+  const booking = await prisma.booking.create({
+    data: {
+      booking_time: new Date(`${day}T${time}`),
+      number_of_people: Number(partySize),
+      booker_email: bookerEmail,
+      booker_phone_number: bookerPhoneNumber,
+      booker_first_name: bookerFirstName,
+      booker_last_name: bookerLastName,
+      booker_occasion: bookerOccasion,
+      booker_request: bookerRequest,
+      restaurant_id: restaurant.id,
+    },
+  });
+  const bookingsAtTableData = tablesToBook.map((tableId) => {
+    return {
+      table_id: 1,
+      booking_id: booking.id,
+    };
+  });
+
+  await prisma.bookingsAtTable.createMany({
+    data: bookingsAtTableData,
+  });
+
   return NextResponse.json({
-    tablesCount,
-    searchTimeWithTables,
-    searchTimesWithTables,
+    booking,
   });
 }
 
